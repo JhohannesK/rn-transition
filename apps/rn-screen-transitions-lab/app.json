@@ -1,0 +1,16 @@
+{
+	"expo": {
+		"name": "RN Screen Transitions Lab",
+		"slug": "rn-screen-transitions-lab",
+		"version": "1.0.0",
+		"orientation": "portrait",
+		"scheme": "rn-screen-transitions-lab",
+		"userInterfaceStyle": "dark",
+		"backgroundColor": "#0D0B12",
+		"plugins": ["expo-router"],
+		"web": {
+			"bundler": "metro",
+			"output": "single"
+		}
+	}
+}
