@@ -87,5 +87,5 @@ lab preset so complete is observable without waiting.
 - `bun install && bun run dev` from `apps/pstack-lab/` serves the app.
 - `bun test` is red on the first `/tdd` commit, green after `reduce` lands.
 - `bun run typecheck` passes (`tsc --noEmit`).
-- Manual pass through start → pause → resume → complete, then the How-built
-  timeline, captured as **screenshot + screen recording** on the PR.
+- Manual pass through start, pause, resume, complete, then the How-built
+  timeline, captured as screenshot plus screen recording on the PR.

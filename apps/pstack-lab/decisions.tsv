@@ -10,3 +10,5 @@ ts	phase	decision	why	evidence	result
 2026-10-09T20:11:00Z	implement	kept React 19 free of useEffect	a store ticks while status is running and hash uses hashchange via useSyncExternalStore	src/focus-store.ts, src/hash.ts	open
 2026-10-09T20:11:40Z	implement	put playbook steps and decisions on one timeline	the product has to show how /poteto-mode actually ran	src/how-view.tsx, src/timeline.ts	open
 2026-10-09T20:12:20Z	implement	added a 10s lab preset next to 25/15/5	a reviewer has to see complete without sitting through a pomodoro	src/session.ts	open
+2026-10-09T20:13:10Z	implement	vertically centered the dial on the viewport	the first screenshot left a dead band under the controls	src/styles.css	pixel-diff n/a
+2026-10-09T20:24:00Z	verify	drove 10s lab start, pause, resume, complete, then #/how in Chrome	prove-it-works on the matching surface, not tsc	localhost:5173, focus_timer_pause_resume_complete_and_how_built.mp4	tests green, UI pass

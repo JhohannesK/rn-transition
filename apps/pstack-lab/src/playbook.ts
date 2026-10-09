@@ -50,10 +50,10 @@ export const FEATURE_STEPS: PlaybookStep[] = [
 	},
 	{
 		n: 6,
-		at: "2026-10-09T20:12:00Z",
+		at: "2026-10-09T20:24:00Z",
 		skill: "verify",
 		title: "Verify on the matching surface",
-		detail: "Browser: start, pause, resume, complete, then this timeline.",
+		detail: "Browser: 10s lab, start, pause, resume, complete, then this timeline.",
 		status: "done",
 	},
 	{
