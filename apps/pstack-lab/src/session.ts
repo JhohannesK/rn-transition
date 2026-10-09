@@ -2,6 +2,7 @@ export const FOCUS_PRESETS_MS = [
 	25 * 60 * 1000,
 	15 * 60 * 1000,
 	5 * 60 * 1000,
+	10 * 1000,
 ] as const
 
 export type Session =

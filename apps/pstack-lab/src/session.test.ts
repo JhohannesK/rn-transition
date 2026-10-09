@@ -49,6 +49,15 @@ describe("reduce", () => {
 		expect(reduce(started, { type: "setDuration", durationMs: FIFTEEN })).toEqual(started)
 	})
 
+	it("should complete a 10 second lab session on tick", () => {
+		const lab = 10_000
+		const started = reduce(idle(lab), { type: "start", nowMs: 100 })
+		expect(reduce(started, { type: "tick", nowMs: 10_100 })).toEqual({
+			status: "completed",
+			durationMs: lab,
+		})
+	})
+
 	it("should complete a running session on tick when the clock reaches zero", () => {
 		const started = reduce(idle(TWENTY_FIVE), { type: "start", nowMs: 0 })
 		expect(reduce(started, { type: "tick", nowMs: TWENTY_FIVE - 1 }).status).toBe("running")

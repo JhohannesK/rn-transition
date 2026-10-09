@@ -51,7 +51,8 @@ type Session =
 
 `reduce(session, command)` is the only writer. The UI holds one `Session` and a
 clock interval started from Start and Resume, cleared from Pause, Reset, and
-complete. No `useEffect`. Durations are 25, 15, and 5 minutes.
+complete. No `useEffect`. Durations are 25, 15, and 5 minutes, plus a 10 second
+lab preset so complete is observable without waiting.
 
 ## Throughput checkpoint
 
