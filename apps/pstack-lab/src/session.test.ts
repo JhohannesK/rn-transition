@@ -1,5 +1,5 @@
 import { describe, expect, it } from "bun:test"
-import { idle, reduce, remainingMs } from "./session"
+import { formatRemaining, idle, reduce, remainingMs } from "./session"
 
 const TWENTY_FIVE = 25 * 60 * 1000
 const FIFTEEN = 15 * 60 * 1000
@@ -49,11 +49,28 @@ describe("reduce", () => {
 		expect(reduce(started, { type: "setDuration", durationMs: FIFTEEN })).toEqual(started)
 	})
 
+	it("should complete a running session on tick when the clock reaches zero", () => {
+		const started = reduce(idle(TWENTY_FIVE), { type: "start", nowMs: 0 })
+		expect(reduce(started, { type: "tick", nowMs: TWENTY_FIVE - 1 }).status).toBe("running")
+		expect(reduce(started, { type: "tick", nowMs: TWENTY_FIVE })).toEqual({
+			status: "completed",
+			durationMs: TWENTY_FIVE,
+		})
+	})
+
 	it("should ignore commands that do not apply to the current status", () => {
 		const idleSession = idle(TWENTY_FIVE)
 		expect(reduce(idleSession, { type: "pause", nowMs: 0 })).toEqual(idleSession)
 		expect(reduce(idleSession, { type: "resume", nowMs: 0 })).toEqual(idleSession)
 		const completed = { status: "completed" as const, durationMs: TWENTY_FIVE }
 		expect(reduce(completed, { type: "start", nowMs: 1 })).toEqual(completed)
+	})
+})
+
+describe("formatRemaining", () => {
+	it("should render whole minutes as mm:ss", () => {
+		expect(formatRemaining(1_500_000)).toBe("25:00")
+		expect(formatRemaining(0)).toBe("00:00")
+		expect(formatRemaining(999)).toBe("00:01")
 	})
 })
