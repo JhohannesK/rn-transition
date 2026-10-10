@@ -20,7 +20,7 @@ function rainMaterial(uniforms: SharedUniforms): ShaderMaterial {
 			...uniforms,
 			uRainHeight: { value: 10 },
 			uRainBase: { value: -2.4 },
-			uRainColor: { value: new Color("#b7c8d6") },
+			uRainColor: { value: new Color("#e4eef6") },
 		},
 		transparent: true,
 		depthWrite: false,
@@ -36,7 +36,7 @@ function rainMaterial(uniforms: SharedUniforms): ShaderMaterial {
         float y = uRainBase + mod(origin.y + aOffset - uTime * 11.5, uRainHeight);
         vec4 world = instanceMatrix * vec4(local, 1.0);
         world.y = y + local.y;
-        vAlpha = 0.45;
+        vAlpha = 0.72;
         gl_Position = projectionMatrix * viewMatrix * world;
       }
     `,
@@ -54,7 +54,7 @@ export function createRain(uniforms: SharedUniforms, count = 4200) {
 	const geo = new BufferGeometry();
 	geo.setAttribute(
 		"position",
-		new BufferAttribute(new Float32Array([-0.006, 0.14, 0, 0.006, 0.14, 0, 0, -0.14, 0]), 3),
+		new BufferAttribute(new Float32Array([-0.012, 0.28, 0, 0.012, 0.28, 0, 0, -0.28, 0]), 3),
 	);
 	geo.setIndex([0, 1, 2]);
 	const material = rainMaterial(uniforms);

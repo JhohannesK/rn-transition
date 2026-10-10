@@ -15,7 +15,7 @@ import {
 } from "three";
 import { applyCycle } from "./scene/cycle";
 import { createIsland } from "./scene/island";
-import { createMoss } from "./scene/moss";
+import { createMoss, pickBladeCount } from "./scene/moss";
 import { PointerOrbit } from "./scene/orbit";
 import { ScanReveal } from "./scene/scan";
 import { createSky } from "./scene/sky";
@@ -45,8 +45,10 @@ const renderer = new WebGLRenderer({
 	alpha: false,
 	powerPreference: "high-performance",
 	failIfMajorPerformanceCaveat: false,
+	preserveDrawingBuffer: true,
 });
 renderer.outputColorSpace = LinearSRGBColorSpace;
+renderer.debug.checkShaderErrors = true;
 renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
 renderer.setSize(window.innerWidth, window.innerHeight);
 renderer.domElement.className = "view";
@@ -60,7 +62,14 @@ scene.add(hemi, key);
 const island = createIsland(uniforms);
 scene.add(island.mesh, island.water, island.shadow, ...island.rocks);
 
-const moss = createMoss(uniforms);
+const gpuInfo = renderer.getContext().getExtension("WEBGL_debug_renderer_info");
+const gpuLabel = gpuInfo
+	? String(renderer.getContext().getParameter(gpuInfo.UNMASKED_RENDERER_WEBGL) ?? "")
+	: "";
+if (/swiftshader|llvmpipe|softpipe|software/i.test(gpuLabel)) {
+	renderer.setPixelRatio(1);
+}
+const moss = createMoss(uniforms, pickBladeCount(gpuLabel));
 scene.add(moss.mesh);
 
 const sky = createSky(uniforms);
@@ -93,11 +102,15 @@ const hud = mountHud(app, { time: state.timeOfDay, weather: state.weather }, {
 hud.setBladeCount(moss.count, webglLabel(renderer));
 if (reduced) hud.setStatus("Reduced motion · survey held at 62%");
 else hud.setStatus("Scanning holm…");
+renderer.debug.onShaderError = (gl, _program, vs, fs) => {
+	const log = `${gl.getShaderInfoLog(vs) ?? ""}\n${gl.getShaderInfoLog(fs) ?? ""}`.trim();
+	hud.setStatus(`Shader error: ${log.slice(0, 180)}`);
+};
 
 applyCycle(state.timeOfDay, state.weather, uniforms);
 key.position.copy(uniforms.uSunDir.value).multiplyScalar(20);
 
-const clock = { last: performance.now(), time: 0 };
+const clock = { last: performance.now(), time: 0, paused: false };
 let frame = 0;
 
 function webglLabel(glRenderer: WebGLRenderer): string {
@@ -120,13 +133,13 @@ function weatherStatus(weather: Weather): string {
 	}
 }
 
-function frameLoop(now: number): void {
-	frame = requestAnimationFrame(frameLoop);
-	if (document.hidden) {
+function tick(now: number): void {
+	if (clock.paused) {
 		clock.last = now;
 		return;
 	}
 	const dt = Math.min(1 / 30, (now - clock.last) / 1000);
+	if (dt <= 0) return;
 	clock.last = now;
 	clock.time += dt;
 	uniforms.uTime.value = clock.time;
@@ -153,6 +166,11 @@ function frameLoop(now: number): void {
 	renderer.render(scene, camera);
 }
 
+function frameLoop(now: number): void {
+	frame = requestAnimationFrame(frameLoop);
+	tick(now);
+}
+
 function onResize(): void {
 	const w = window.innerWidth;
 	const h = window.innerHeight;
@@ -163,9 +181,50 @@ function onResize(): void {
 
 window.addEventListener("resize", onResize);
 frame = requestAnimationFrame(frameLoop);
+const watchdog = window.setInterval(() => {
+	if (!clock.paused && performance.now() - clock.last > 48) tick(performance.now());
+}, 32);
+
+(
+	window as unknown as Window & {
+		__holm: {
+			pause: () => void;
+			resume: () => void;
+			setTime: (value: number) => void;
+			setWeather: (weather: Weather) => void;
+			replay: () => void;
+			status: () => string;
+			count: number;
+		};
+	}
+).__holm = {
+	pause: () => {
+		clock.paused = true;
+	},
+	resume: () => {
+		clock.paused = false;
+		clock.last = performance.now();
+	},
+	setTime: (value: number) => {
+		state.timeOfDay = value;
+		hud.setTime(value);
+	},
+	setWeather: (weather: Weather) => {
+		state.weather = weather;
+		hud.setWeather(weather);
+		rain.mesh.visible = weather === "rain";
+	},
+	replay: () => {
+		scan.replay();
+		hud.setStatus("Scanning holm…");
+	},
+	status: () => document.querySelector("#stat")?.textContent ?? "",
+	count: moss.count,
+};
 
 window.addEventListener("pagehide", () => {
 	cancelAnimationFrame(frame);
+	window.clearInterval(watchdog);
 	detachOrbit();
 	window.removeEventListener("resize", onResize);
 	renderer.dispose();

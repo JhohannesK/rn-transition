@@ -18,21 +18,20 @@ export const ISLAND_RADIUS = 4.35;
 export const WATER_LEVEL = 0.38;
 export const WATER_RADIUS = 0.95;
 
-const TOP_MOSS = new Color("#355c2a");
-const TOP_LIT = new Color("#5d8a38");
-const DIRT = new Color("#6a5340");
-const ROCK = new Color("#5c564f");
-const ROCK_DARK = new Color("#2e2a26");
+	const TOP_MOSS = new Color("#2f6a28");
+	const TOP_LIT = new Color("#6fa83a");
+	const DIRT = new Color("#6a5340");
+const ROCK = new Color("#6d675e");
+const ROCK_DARK = new Color("#1f1c19");
 
 export function islandHeight(x: number, z: number): number {
-	const r = Math.hypot(x, z);
-	if (r > ISLAND_RADIUS) return Number.NEGATIVE_INFINITY;
+	const r = Math.min(Math.hypot(x, z), ISLAND_RADIUS);
 	const n = fbm2(x * 0.32, z * 0.32, 5, 1);
 	const ridge = Math.abs(fbm2(x * 0.18 + 8, z * 0.18, 4, 4));
 	const mound = fbm2(x * 0.55 + 2.2, z * 0.55, 3, 9) * 0.22;
 	const rim = Math.exp(-(((r - ISLAND_RADIUS * 0.78) / 0.42) ** 2)) * 0.28;
-	const lip = smoothstep(ISLAND_RADIUS, ISLAND_RADIUS * 0.58, r) ** 0.72;
-	let y = (0.42 + n * 0.62 + ridge * 0.28 + mound + rim) * lip;
+	const lip = smoothstep(ISLAND_RADIUS, ISLAND_RADIUS * 0.62, r) ** 0.62;
+	let y = (0.52 + n * 0.48 + ridge * 0.2 + mound + rim) * lip;
 	if (inPond(x, z)) y = Math.min(y, WATER_LEVEL - 0.02);
 	return y;
 }
@@ -171,8 +170,8 @@ export function buildIslandGeometry(radial: number, rings: number): BufferGeomet
 function islandMaterial(uniforms: SharedUniforms): ShaderMaterial {
 	return new ShaderMaterial({
 		uniforms,
+		vertexColors: true,
 		vertexShader: /* glsl */ `
-      attribute vec3 color;
       varying vec3 vWorld;
       varying vec3 vNormal;
       varying vec3 vColor;
@@ -193,7 +192,8 @@ function islandMaterial(uniforms: SharedUniforms): ShaderMaterial {
       void main() {
         if (unscanned(vWorld)) discard;
         vec3 n = normalize(vNormal);
-        vec3 col = shadeLambert(vColor, n);
+        vec3 albedo = vColor + vec3(0.04, 0.07, 0.02);
+        vec3 col = shadeLambert(albedo, n);
         float dist = length(vWorld - cameraPosition);
         col = applyFog(col, dist);
         gl_FragColor = vec4(toGamma(col), 1.0);
@@ -359,7 +359,7 @@ export function createCageMaterial(
 
 export function createIsland(uniforms: SharedUniforms) {
 	const rng = mulberry32(0x6d6f7373);
-	const geometry = buildIslandGeometry(72, 36);
+	const geometry = buildIslandGeometry(56, 28);
 	const material = islandMaterial(uniforms);
 	const mesh = new Mesh(geometry, material);
 

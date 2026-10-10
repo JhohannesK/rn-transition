@@ -6,12 +6,12 @@ function damp(current: number, target: number, lambda: number, dt: number): numb
 
 export class PointerOrbit {
 	readonly look = new Vector3(0, 0.32, 0);
-	theta = 0.72;
-	phi = 1.12;
-	radius = 11.6;
-	private goalTheta = 0.72;
-	private goalPhi = 1.12;
-	private goalRadius = 11.6;
+	theta = 0.86;
+	phi = 1.22;
+	radius = 10.4;
+	private goalTheta = 0.86;
+	private goalPhi = 1.22;
+	private goalRadius = 10.4;
 	private pointerX = 0;
 	private pointerY = 0;
 	private dragging = false;

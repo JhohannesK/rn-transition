@@ -16,23 +16,11 @@ import { LIGHT_GLSL, SCAN_GLSL, type SharedUniforms } from "./uniforms";
 import { ISLAND_RADIUS, islandHeight, islandNormal, inPond } from "./island";
 
 function bladeGeometry(): BufferGeometry {
-	const w = 0.016;
-	const h = 0.17;
-	const positions = new Float32Array([
-		-w, 0, 0,
-		w, 0, 0,
-		-w * 0.55, h * 0.48, 0.008,
-		w * 0.42, h * 0.52, -0.006,
-		0, h, 0.012,
-	]);
-	const normals = new Float32Array([
-		0, 0.15, 1,
-		0, 0.15, 1,
-		0.1, 0.2, 1,
-		-0.1, 0.2, 1,
-		0, 0.4, 1,
-	]);
-	const indices = [0, 1, 2, 1, 3, 2, 2, 3, 4];
+	const w = 0.028;
+	const h = 0.24;
+	const positions = new Float32Array([-w, 0, 0, w, 0, 0, 0, h, 0.01]);
+	const normals = new Float32Array([0, 0.2, 1, 0, 0.2, 1, 0, 0.45, 1]);
+	const indices = [0, 1, 2];
 	const geo = new BufferGeometry();
 	geo.setAttribute("position", new BufferAttribute(positions, 3));
 	geo.setAttribute("normal", new BufferAttribute(normals, 3));
@@ -55,7 +43,7 @@ function mossMaterial(uniforms: SharedUniforms): ShaderMaterial {
       uniform float uWind;
       void main() {
         vec3 local = position;
-        float tip = clamp(position.y / 0.17, 0.0, 1.0);
+        float tip = clamp(position.y / 0.24, 0.0, 1.0);
         float gust = sin(uTime * 1.35 + aPhase) * 0.13 * uWind;
         float cross = cos(uTime * 1.05 + aPhase * 1.37) * 0.08 * uWind;
         local.x += gust * tip * tip;
@@ -90,9 +78,12 @@ function mossMaterial(uniforms: SharedUniforms): ShaderMaterial {
 	});
 }
 
-export function pickBladeCount(): number {
+export function pickBladeCount(gpuLabel = ""): number {
+	if (/swiftshader|llvmpipe|softpipe|software|microsoft basic/i.test(gpuLabel)) {
+		return 16_000;
+	}
 	const cores = navigator.hardwareConcurrency || 4;
-	return Math.min(72_000, Math.max(28_000, cores * 7_000));
+	return Math.min(72_000, Math.max(40_000, cores * 7_000));
 }
 
 export function createMoss(uniforms: SharedUniforms, targetCount?: number) {
@@ -134,15 +125,16 @@ export function createMoss(uniforms: SharedUniforms, targetCount?: number) {
 		const z = Math.sin(theta) * radius;
 		if (inPond(x, z)) continue;
 		const y = islandHeight(x, z);
-		if (!Number.isFinite(y) || y < 0.16) continue;
+		if (!Number.isFinite(y) || y < 0.28) continue;
+		if (radius > ISLAND_RADIUS * 0.78) continue;
 		const normal = islandNormal(x, z);
-		if (normal.y < 0.48) continue;
+		if (normal.y < 0.68) continue;
 
 		aligned.copy(normal).lerp(up, 0.58).normalize();
 		quat.setFromUnitVectors(up, aligned);
 		yaw.setFromAxisAngle(up, rng() * Math.PI * 2);
 		quat.multiply(yaw);
-		const s = 0.72 + rng() * 1.15;
+		const s = 0.95 + rng() * 1.35;
 		scale.set(s, s * (0.85 + rng() * 0.55), s);
 		pos.set(x, y - 0.008, z);
 		matrix.compose(pos, quat, scale);
