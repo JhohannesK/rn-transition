@@ -1,0 +1,213 @@
+:root {
+	--peat: #12140f;
+	--cream: #efe6d3;
+	--lichen: #c6d36e;
+	--iron: #8a8376;
+	--line: color-mix(in srgb, var(--cream) 18%, transparent);
+	--panel: color-mix(in srgb, var(--peat) 78%, transparent);
+}
+
+* {
+	box-sizing: border-box;
+}
+
+html,
+body,
+#app {
+	margin: 0;
+	width: 100%;
+	height: 100%;
+	overflow: hidden;
+	background: #070807;
+	color: var(--cream);
+}
+
+body {
+	font-family: "IBM Plex Mono", ui-monospace, "Source Code Pro", monospace;
+	font-size: 12px;
+	letter-spacing: 0.04em;
+}
+
+canvas.view {
+	display: block;
+	width: 100%;
+	height: 100%;
+	touch-action: none;
+	cursor: grab;
+}
+
+canvas.view:active {
+	cursor: grabbing;
+}
+
+.hud {
+	pointer-events: none;
+	position: fixed;
+	inset: 0;
+	z-index: 2;
+	padding: clamp(18px, 3vw, 36px);
+	display: flex;
+	flex-direction: column;
+	justify-content: space-between;
+}
+
+.hud::after {
+	content: "";
+	position: absolute;
+	inset: 0;
+	pointer-events: none;
+	background:
+		radial-gradient(ellipse at center, transparent 42%, #050605cc 100%),
+		url("data:image/svg+xml,%3Csvg viewBox='0 0 160 160' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.45'/%3E%3C/svg%3E");
+	opacity: 0.22;
+	mix-blend-mode: overlay;
+}
+
+.mark,
+.rack {
+	position: relative;
+	z-index: 1;
+	pointer-events: auto;
+	max-width: 28rem;
+}
+
+.kicker,
+.meta,
+.latin,
+.hint,
+.stat,
+.ticks {
+	margin: 0;
+	color: var(--iron);
+	text-transform: uppercase;
+	font-size: 10px;
+	line-height: 1.6;
+}
+
+.latin {
+	text-transform: none;
+	letter-spacing: 0.08em;
+	margin-top: 8px;
+}
+
+h1 {
+	margin: 6px 0 0;
+	font-family: "Bodoni Moda", "Didot", "Iowan Old Style", serif;
+	font-weight: 500;
+	font-size: clamp(4.4rem, 11vw, 8.4rem);
+	line-height: 0.78;
+	letter-spacing: -0.03em;
+	color: var(--cream);
+}
+
+.rack {
+	align-self: flex-start;
+	display: grid;
+	gap: 16px;
+	padding: 16px 18px 14px;
+	background: var(--panel);
+	border: 1px solid var(--line);
+	backdrop-filter: blur(10px);
+	width: min(360px, 92vw);
+}
+
+.slider {
+	display: grid;
+	gap: 8px;
+}
+
+.slider input {
+	appearance: none;
+	width: 100%;
+	height: 2px;
+	background: var(--line);
+	outline: none;
+}
+
+.slider input::-webkit-slider-thumb {
+	appearance: none;
+	width: 12px;
+	height: 12px;
+	border-radius: 0;
+	background: var(--lichen);
+	border: 1px solid var(--peat);
+	cursor: pointer;
+}
+
+.slider input:focus-visible {
+	outline: 1px solid var(--lichen);
+	outline-offset: 4px;
+}
+
+.ticks {
+	display: flex;
+	justify-content: space-between;
+}
+
+.wx {
+	border: 0;
+	margin: 0;
+	padding: 0;
+	display: grid;
+	gap: 8px;
+}
+
+.wx-row {
+	display: grid;
+	grid-template-columns: repeat(3, 1fr);
+	gap: 6px;
+}
+
+.wx-row button,
+.replay {
+	font: inherit;
+	text-transform: uppercase;
+	letter-spacing: 0.08em;
+	color: var(--cream);
+	background: transparent;
+	border: 1px solid var(--line);
+	padding: 10px 8px;
+	cursor: pointer;
+}
+
+.wx-row button[aria-checked="true"],
+.replay:hover,
+.wx-row button:hover {
+	border-color: var(--lichen);
+	color: var(--lichen);
+}
+
+.wx-row button:focus-visible,
+.replay:focus-visible {
+	outline: 1px solid var(--lichen);
+	outline-offset: 2px;
+}
+
+.replay {
+	justify-self: start;
+	padding: 10px 14px;
+}
+
+.stat {
+	color: var(--cream);
+}
+
+.hint {
+	opacity: 0.7;
+}
+
+@media (max-width: 720px) {
+	h1 {
+		font-size: clamp(3.4rem, 22vw, 5.4rem);
+	}
+
+	.rack {
+		width: 100%;
+	}
+}
+
+@media (prefers-reduced-motion: reduce) {
+	* {
+		scroll-behavior: auto;
+	}
+}
